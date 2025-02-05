@@ -11,8 +11,8 @@ const MAX_SLICE_SIZE = 50 * 1024;
 
 type Tags = {
   name: string;
-  value?: string | undefined;
-  values?: string[] | undefined;
+  value?: string;
+  values?: string[];
 };
 
 
@@ -75,47 +75,10 @@ const sliceUploadPdf = async (inputPath: string, doi: string, title: string, aut
   }
 };
 
-const mergeSlices = async (doi: string, title: string | undefined, author: string | undefined, outputPath: string) => {
+const mergeSlices = async (doi: string, outputPath: string) => {
   //根据doi查询数据
-  const query = `
-    query {
-        transactions(
-            tags: [
-                { name: "App-Name", values: ["scivault"] },
-                { name: "Content-Type", values: ["application/pdf"] },
-                { name: "Version", values: ["0.1.0"] },
-                { name: "doi", values: ["${doi}"] },
-                { name: "title", values: ["${title}"] },
-                { name: "authors", values: ["${author}"] },
-            ]
-        ) {
-            edges {
-                node {
-                    id
-                }
-            }
-        }
-    }
-`;
-
-  // 使用正确的 GraphQL endpoint
-  const response = await fetch("https://uploader.irys.xyz/graphql", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ query }),
-  });
-
-  const result = await response.json();
-  const id = result.data?.transactions?.edges?.[0]?.node?.id;
-  if (id) {
-    log.info(`PDF index ID: ${id}`);
-    // 获取所有pdf的id
-    let pdfIds: string[] = [];
-    result.data.transactions.edges.forEach((edge: any) => {
-      pdfIds.push(edge.node.id);
-    });
+  const pdfIds = await irys.queryPdf(doi);
+  if (pdfIds.length > 0) {
     let pdfTexts = [];
     for (const pdfId of pdfIds) {
       const pdf = await fetch(`https://gateway.irys.xyz/${pdfId}`, {
@@ -139,7 +102,7 @@ const mergeSlices = async (doi: string, title: string | undefined, author: strin
 // (async () => {
 //   const pdfId = await sliceUploadPdf(inputPdfPath, "10.1017/s0263574718001145");
 //   console.log(pdfId);
-//   await mergeSlices("10.1017/s0263574718001145", "title", "author", "output.pdf");
+//   await mergeSlices("10.1017/s0263574718001145", "output.pdf");
 // })();
 
 
