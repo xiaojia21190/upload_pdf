@@ -1,11 +1,9 @@
 import dotenv from "dotenv";
-import { Uploader } from "@irys/upload";
-import { Solana } from "@irys/upload-solana";
-import { PDFDocument } from "pdf-lib";
 import fs from "fs";
 // import path from "path";
 import log from "./log";
 import irys from './irys';
+import { encodeToBase64 } from './util';
 
 dotenv.config(); // 加载 .env 文件中的环境变量
 
@@ -18,15 +16,14 @@ type Tags = {
 };
 
 
-const sliceUploadPdf = async (inputPath: string, doi: string, title: string | undefined, author: string | undefined): Promise<{ receiptIDs: string[] }> => {
+const sliceUploadPdf = async (inputPath: string, doi: string, title: string, author: string): Promise<{ receiptIDs: string[] }> => {
   try {
     if (!fs.existsSync(inputPath)) {
       throw new Error(`input path not exists: ${inputPath}`);
     }
 
     const pdfBytes = fs.readFileSync(inputPath);
-    const pdfDoc = await PDFDocument.load(pdfBytes);
-    let fileBase64 = await pdfDoc.saveAsBase64();
+    let fileBase64 = encodeToBase64(pdfBytes);
     // 获取文件总大小
     const fileSize = fileBase64.length;
     log.info(`File size: ${fileSize} bytes`);
@@ -53,8 +50,8 @@ const sliceUploadPdf = async (inputPath: string, doi: string, title: string | un
       { name: "Content-Type", value: "application/pdf" },
       { name: "Version", values: ["0.1.0"] },
       { name: "doi", values: [doi] },
-      { name: "title", values: [title || ""] },
-      { name: "authors", values: [author || ""] },
+      { name: "title", values: [title] },
+      { name: "authors", values: [author] },
     ];
     for (const slice of chunks) {
       log.info(`\nUploading slice...`);
