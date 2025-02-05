@@ -23,7 +23,7 @@ const queryDoi = async (doi: string) => {
             tags: [
                 { name: "App-Name", values: ["scivault"] },
                 { name: "Content-Type", values: ["application/json"] },
-                { name: "Version", values: ["0.1.0"] },
+                { name: "Version", values: ["1.0.3"] },
                 { name: "doi", values: ["${doi}"] },
             ]
         ) {
@@ -46,7 +46,7 @@ const queryDoi = async (doi: string) => {
   });
 
   const result = await response.json();
-  console.log(result);
+  log.info(`metadata index: ${JSON.stringify(result)}`);
   const id = result.data?.transactions?.edges?.[0]?.node?.id;
   if (id) {
     log.info(`metadata index ID: ${id}`);
@@ -65,7 +65,7 @@ const queryPdf = async (doi: string) => {
           tags: [
               { name: "App-Name", values: ["scivault"] },
               { name: "Content-Type", values: ["application/pdf"] },
-              { name: "Version", values: ["0.1.0"] },
+              { name: "Version", values: ["1.0.3"] },
               { name: "doi", values: ["${doi}"] },
           ]
       ) {
@@ -106,7 +106,9 @@ const queryPdf = async (doi: string) => {
 const upload = async (slice: any, tags: any) => {
   const irys = await getIrysUploader();
   if (irys) {
-    const receipt = await irys.upload(slice, tags);
+    const receipt = await irys.upload(slice, {
+      tags,
+    });
     log.info(`receipt: ${JSON.stringify(receipt)}`);
     return receipt.id;
   } else {

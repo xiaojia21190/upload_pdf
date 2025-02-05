@@ -9,14 +9,7 @@ dotenv.config(); // 加载 .env 文件中的环境变量
 
 const MAX_SLICE_SIZE = 50 * 1024;
 
-type Tags = {
-  name: string;
-  value?: string;
-  values?: string[];
-};
-
-
-const sliceUploadPdf = async (inputPath: string, doi: string, title: string, author: string): Promise<{ receiptIDs: string[] }> => {
+const sliceUploadPdf = async (inputPath: string, doi: string, title: string): Promise<{ receiptIDs: string[] }> => {
   try {
     if (!fs.existsSync(inputPath)) {
       throw new Error(`input path not exists: ${inputPath}`);
@@ -44,18 +37,17 @@ const sliceUploadPdf = async (inputPath: string, doi: string, title: string, aut
       }
     }
 
-    let receiptIDs = [];
-    const tags: Tags[] = [
-      { name: "App-Name", values: ["scivault"] },
+    let receiptIDs: string[] = [];
+    const tags = [
+      { name: "App-Name", value: "scivault" },
       { name: "Content-Type", value: "application/pdf" },
-      { name: "Version", values: ["0.1.0"] },
-      { name: "doi", values: [doi] },
-      { name: "title", values: [title] },
-      { name: "authors", values: [author] },
+      { name: "Version", values: "1.0.3" },
+      { name: "doi", value: doi },
+      { name: "title", value: title },
     ];
     for (const slice of chunks) {
       log.info(`\nUploading slice...`);
-      const receipt = await irys.upload(Buffer.from(slice), { tags: tags });
+      const receipt = await irys.upload(Buffer.from(slice), tags);
       if (receipt) {
         receiptIDs.push(receipt);
         log.info(`Explorer URL: https://gateway.irys.xyz/${receipt}`);

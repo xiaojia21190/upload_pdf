@@ -54,7 +54,6 @@ const scihubScraper = async (scihubURL: string, doi: string, filePath: string) =
   log.info(`begin download scihub: ${scihubURL}${doi}`);
   try {
     const response = await axios.get(`${scihubURL}${doi}`);
-    console.log(response);
     const $ = cheerio.load(response.data);
 
     const embedTag = $("embed[type='application/pdf']");
