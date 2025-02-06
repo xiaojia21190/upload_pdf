@@ -41,7 +41,7 @@ const sliceUploadPdf = async (inputPath: string, doi: string, title: string): Pr
     const tags = [
       { name: "App-Name", value: "scivault" },
       { name: "Content-Type", value: "application/pdf" },
-      { name: "Version", values: "1.0.3" },
+      { name: "Version", value: "1.0.3" },
       { name: "doi", value: doi },
       { name: "title", value: title },
     ];
