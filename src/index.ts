@@ -15,16 +15,16 @@ const run = async () => {
   let metadata = await irys.queryDoi(doi);
   if (metadata) {
     const title = metadata.title;
-    // // 下载文件
+    // 下载文件
     await fetchPdf(doi);
     const filePath = path.resolve(INDEX_DATA_TEMP_DIR, `${doi.replace(/\//g, "%2F")}.pdf`);
-    // // // 上传文件
+    // 上传文件
     const { receiptIDs } = await upload.sliceUploadPdf(filePath, doi, title,);
     log.info(`receiptIDs: ${receiptIDs}`);
-    // // 清空 index_data_temp
+    // 清空 index_data_temp
     fs.unlinkSync(filePath);
-    // // 合并文件
-    // // await upload.mergeSlices(doi, "output.pdf");
+    // 合并文件
+    // await upload.mergeSlices(doi, "output.pdf");
   } else {
     log.info(`metadata is null`);
   }
