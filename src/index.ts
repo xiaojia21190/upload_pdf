@@ -19,10 +19,10 @@ const run = async () => {
     await fetchPdf(doi);
     const filePath = path.resolve(INDEX_DATA_TEMP_DIR, `${doi.replace(/\//g, "%2F")}.pdf`);
     // 上传文件
-    const { receiptIDs } = await upload.sliceUploadPdf(filePath, doi, title,);
+    const { receiptIDs } = await upload.sliceUploadPdf(filePath, doi, title);
     log.info(`receiptIDs: ${receiptIDs}`);
     // 清空 index_data_temp
-    fs.unlinkSync(filePath);
+    fs.rmdirSync(INDEX_DATA_TEMP_DIR, { recursive: true });
     // 合并文件
     // await upload.mergeSlices(doi, "output.pdf");
   } else {
