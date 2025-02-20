@@ -1,0 +1,20 @@
+{
+  "doi": "10.0000/0000.0000.0000",
+  "size": "{pdf file size in bytes}",
+  "md5": "{pdf file checksum}",
+  "sha256": "{pdf file checksum}",
+  "openalex": "{ json fetched from api.openalex.org/works/https://doi.org/10.0000/0000.0000.0000 }",
+  "crossref": "{ value of the message json field from api.crossref.org/works/10.0000/0000.0000.0000 }",
+  "sci-hub": {
+    "download": {
+      "timestamp": "{unix timestamp, or date time string for papers downloaded earlier than 2016-11}",
+      "university": "{university proxy used for download, absent for papers downloaded from simple proxies}",
+      "from": "{country of the user who requested the paper, absent for early downloads and Sci-Hub's manual downloads}"
+    },
+    "image": "{number of .img file containing the pdf (.img files are used by Sci-Hub to store files on mirrors}}"
+  },
+  "libgen": {
+    "ID": "{ID in scimag table corresponding to the file with the same DOI and MD5 sum}",
+    "TimeAdded": "{TimeAdded column from scimag table}"
+  }
+}
