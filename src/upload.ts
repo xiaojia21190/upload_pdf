@@ -5,6 +5,13 @@ import log from "./log";
 import irys from './irys';
 import { encodeToBase64 } from './util';
 
+interface UploadProgress {
+  doi: string;
+  uploadedChunks: number;
+  totalChunks: number;
+  receiptIDs: string[];
+}
+
 dotenv.config(); // 加载 .env 文件中的环境变量
 
 const MAX_SLICE_SIZE = 50 * 1024;
@@ -30,6 +37,20 @@ const sliceUploadPdf = async (inputPath: string, doi: string, title: string): Pr
 
     log.info(`Total chunks created: ${chunks.length}`);
 
+    // 检查是否存在进度文件
+    const progressPath = `d:\\upload_pdf\\temp\\${doi.replace('/', '_')}_progress.json`;
+    let progress: UploadProgress = {
+      doi,
+      uploadedChunks: 0,
+      totalChunks: chunks.length,
+      receiptIDs: []
+    };
+
+    if (fs.existsSync(progressPath)) {
+      progress = JSON.parse(fs.readFileSync(progressPath, 'utf-8'));
+      log.info(`Resuming upload from chunk ${progress.uploadedChunks}/${progress.totalChunks}`);
+    }
+
     const pdfIds = await irys.queryPdf(doi);
     if (pdfIds.length > 0) {
       return {
@@ -37,7 +58,7 @@ const sliceUploadPdf = async (inputPath: string, doi: string, title: string): Pr
       }
     }
 
-    let receiptIDs: string[] = [];
+    let receiptIDs: string[] = progress.receiptIDs;
     const tags = [
       { name: "App-Name", value: "scivault" },
       { name: "Content-Type", value: "application/pdf" },
@@ -45,17 +66,33 @@ const sliceUploadPdf = async (inputPath: string, doi: string, title: string): Pr
       { name: "doi", value: doi },
       { name: "title", value: title },
     ];
-    for (const slice of chunks) {
+    for (const [index, slice] of chunks.entries()) {
       log.info(`\nUploading slice...`);
       const receipt = await irys.upload(Buffer.from(slice), tags);
       if (receipt) {
         receiptIDs.push(receipt);
         log.info(`Explorer URL: https://gateway.irys.xyz/${receipt}`);
+
+        // 更新并保存进度
+        progress.uploadedChunks = index + 1;
+        progress.receiptIDs = receiptIDs;
+        fs.writeFileSync(progressPath, JSON.stringify(progress, null, 2));
+
+        //如果上传完后，删除进度文件
+        if (progress.uploadedChunks === progress.totalChunks) {
+          if (fs.existsSync(progressPath)) {
+            fs.unlinkSync(progressPath);
+          }
+        }
       } else {
         throw new Error("Failed to upload slice");
       }
     }
 
+    // 上传完成后删除进度文件
+    if (fs.existsSync(progressPath)) {
+      fs.unlinkSync(progressPath);
+    }
     log.info(`\nPDF uploaded successfully!\nReceipt IDs: ${receiptIDs.join(", ")}`);
     return {
       receiptIDs,
