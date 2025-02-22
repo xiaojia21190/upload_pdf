@@ -78,20 +78,17 @@ const sliceUploadPdf = async (inputPath: string, doi: string, title: string): Pr
         progress.receiptIDs = receiptIDs;
         fs.writeFileSync(progressPath, JSON.stringify(progress, null, 2));
 
-        //如果上传完后，删除进度文件
-        if (progress.uploadedChunks === progress.totalChunks) {
-          if (fs.existsSync(progressPath)) {
-            fs.unlinkSync(progressPath);
-          }
-        }
+
       } else {
         throw new Error("Failed to upload slice");
       }
     }
 
-    // 上传完成后删除进度文件
-    if (fs.existsSync(progressPath)) {
-      fs.unlinkSync(progressPath);
+    //如果上传完后，删除进度文件
+    if (progress.uploadedChunks === progress.totalChunks) {
+      if (fs.existsSync(progressPath)) {
+        fs.unlinkSync(progressPath);
+      }
     }
     log.info(`\nPDF uploaded successfully!\nReceipt IDs: ${receiptIDs.join(", ")}`);
     return {
