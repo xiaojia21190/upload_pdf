@@ -33,11 +33,11 @@ app.post('/upload', upload.single('pdf'), async (req, res) => {
   }
   console.log(req.body);
   let result = await run(req.body.doi, req.file.path);
-  if (result.message === 'metadata is null') {
+  if (result.receiptIDs.length === 0) {
     res.status(400).json({ error: 'metadata is null' });
     return;
   }
-  if (result.message === 'upload success') {
+  if (result.receiptIDs.length > 0) {
     res.status(200).json({
       message: 'upload success',
       receiptIDs: result.receiptIDs
