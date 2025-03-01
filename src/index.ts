@@ -4,17 +4,13 @@ import upload from "./upload";
 import log from "./log";
 import irys from "./irys";
 import fs from "fs";
-import { retry } from "./utils/retry";
 // import path from "path";
 dotenv.config();
 
 const run = async (doi: string, path: string) => {
   // const doi = "10.1103/PhysRevD.76.044016";
   //query author title
-  let metadata = await retry(() => irys.queryDoi(doi), {
-    maxAttempts: 3,
-    initialDelay: 1000,
-  });
+  let metadata = await irys.queryDoi(doi);
   if (metadata) {
     const title = metadata.title;
     // 下载文件
@@ -54,6 +50,5 @@ const run = async (doi: string, path: string) => {
     };
   }
 };
-
 
 export { run };
